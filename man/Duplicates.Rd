@@ -124,7 +124,6 @@ duplicates.}
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-Duplicates-new}{\code{Duplicates$new()}}
-\item \href{#method-Duplicates-get_comparisons}{\code{Duplicates$get_comparisons()}}
 \item \href{#method-Duplicates-detect}{\code{Duplicates$detect()}}
 \item \href{#method-Duplicates-get_duplicates_groups}{\code{Duplicates$get_duplicates_groups()}}
 \item \href{#method-Duplicates-make_annotation_data}{\code{Duplicates$make_annotation_data()}}
@@ -171,38 +170,6 @@ speed up character count}
 
 \item{\code{threshold}}{numeric (0 < x < 1), the minimum similarity to qualify two
 documents as duplicates}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Duplicates-get_comparisons"></a>}}
-\if{latex}{\out{\hypertarget{method-Duplicates-get_comparisons}{}}}
-\subsection{Method \code{get_comparisons()}}{
-Identify documents that will be compared (based on date of documents).
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Duplicates$get_comparisons(
-  x,
-  reduce = TRUE,
-  verbose = FALSE,
-  progress = TRUE,
-  mc = FALSE
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{x}}{a \code{partition_bundle} object defining the documents that will be
-compared to detect duplicates}
-
-\item{\code{reduce}}{A \code{logical} value, whether to drop one half of matrix.}
-
-\item{\code{verbose}}{logical, whether to be verbose}
-
-\item{\code{progress}}{logical, whether to show progress bar}
-
-\item{\code{mc}}{logical, whether to use multicore}
 }
 \if{html}{\out{</div>}}
 }

@@ -169,70 +169,7 @@ Duplicates <- R6::R6Class(
     },
     
     
-    #' @description
-    #' Identify documents that will be compared (based on date of documents).
-    #' @param reduce A `logical` value, whether to drop one half of matrix.
-    get_comparisons = function(x, reduce = TRUE, verbose = FALSE, progress = TRUE, mc = FALSE){
 
-      if (!self$s_attribute %in% s_attributes(self$corpus)){
-        stop("no valid s-attribute in field 's_attribute'")
-      }
-      
-      if (!requireNamespace("chron", quietly = TRUE)){
-        stop("the 'chron'-package needs to be installed but is not available")
-      }
-      
-      if (verbose) cli_progress_step("getting docs to be compared")
-      dates <- unlist(lapply(
-        setNames(x@objects, names(x)),
-        function(y) s_attributes(y, self$s_attribute)
-      ))
-      if (!is.null(self$date_preprocessor)) dates <- sapply(dates, self$date_preprocessor)
-      objectSplittedByDate <- split(1L:length(x), f = dates)
-      .get_comparisons <- function(i){
-        dateOfDoc <- try(as.POSIXct(unname(dates[i])))
-        if (is(dateOfDoc)[1] == "try-error"){
-          warning(paste("cannot parse date:", dates[i]))
-          return(NULL)
-        }
-        
-        if (self$n > 0){
-          dateRange <- chron::seq.dates(
-            from = strftime(dateOfDoc - 1 - (self$n - 1) * 86400, format = "%m/%d/%Y"),
-            to = strftime(dateOfDoc + 1 + (self$n - 1) * 86400, format = "%m/%d/%Y"),
-            by = "days", format = "%Y-%m-%d"
-          )
-        } else {
-          dateRange <- dateOfDoc
-        }
-        datesToGet <- as.character(strftime(dateRange, format = "%Y-%m-%d"))
-        unlist(lapply(datesToGet, function(y) objectSplittedByDate[[y]]))
-      }
-      
-      docsToCompare <- pblapply(
-        1L:length(x),
-        FUN = .get_comparisons, cl = getOption("polmineR.cores")
-      )
-      
-      docsToCompareMatrix <- simple_triplet_matrix(
-        i = unlist(docsToCompare),
-        j = unlist(lapply(
-          1L:length(docsToCompare),
-          function(i) rep(i, times = length(docsToCompare[[i]]))
-        )),
-        v = rep(NA, times = length(unlist(docsToCompare))),
-        ncol = length(x),
-        nrow = length(x),
-        dimnames = list(rows = names(x), columns = names(x))
-      )
-      if (reduce){
-        if (verbose) cli_progress_step("reduction of document comparisons")
-        keepOrDrop <- ifelse(docsToCompareMatrix$i < docsToCompareMatrix$j, TRUE, FALSE)
-        for (x in c("i", "j", "v")) docsToCompareMatrix[[x]] <- docsToCompareMatrix[[x]][keepOrDrop]
-      }
-      return( docsToCompareMatrix )
-    },
-    
 
     #' @description
     #' Wrapper that implements the entire workflow for duplicate detection.
