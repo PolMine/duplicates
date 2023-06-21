@@ -42,12 +42,26 @@ if ("RP" \%in\% corpus()$corpus){
     n = 0L,
     threshold = 0.6 # default is 0.9
   )
+  
+  dates <- seq.Date(from = as.Date("2014-01-02"), to = as.Date("2014-02-08"), by = 1L)
+  dates <- as.character(dates) \%>\% 
+    intersect(s_attributes(corpus("RP"), "article_date")) \%>\% 
+    as.Date()
 
   article_bundle <- corpus("RP") |>
-    subset(article_date \%in\% c("2014-01-02", "2014-01-03", "2014-01-04")) |> 
+    subset(article_date \%in\% as.character(dates)) |> 
     split(s_attribute = "article_id")
 
-  D$detect(x = article_bundle, mc = FALSE, progress = FALSE)
+  D$detect(
+    x = article_bundle,
+    mc = 6L,
+    progress = FALSE,
+    f = lubridate::floor_date(
+      as.Date(unlist(s_attributes(article_bundle, "article_date"))),
+      unit = "month",
+      week_start = 1L
+    )
+  )
   
   # To inspect result
   D$duplicates
@@ -101,6 +115,8 @@ duplicates.}
 \item{\code{date_preprocessor}}{function to rework dates if not in the DD-MM-YYYY standard format}
 
 \item{\code{annotation}}{A \code{data.table} with corpus positions and annotation data.}
+
+\item{\code{vocabulary}}{A purged version of the vocabulary.}
 }
 \if{html}{\out{</div>}}
 }
@@ -203,7 +219,6 @@ Wrapper that implements the entire workflow for duplicate detection.
   f = NULL,
   character_selection = 1:12,
   min_shingle_length = n,
-  how = "coop",
   verbose = TRUE,
   mc = FALSE,
   progress = TRUE
@@ -229,9 +244,6 @@ line with Kliche et al. 2014: 695.}
 \item{\code{min_shingle_length}}{An \code{integer} value with minimum length of
 shingles that enter calculation of document similarity. Defaults to
 \code{n}.}
-
-\item{\code{how}}{Implementation used to compute similarities - passed into
-\code{cosine_similarity()}.}
 
 \item{\code{verbose}}{logical, whether to be verbose}
 
