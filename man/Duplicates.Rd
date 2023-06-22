@@ -124,6 +124,8 @@ duplicates.}
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-Duplicates-new}{\code{Duplicates$new()}}
+\item \href{#method-Duplicates-count_characters}{\code{Duplicates$count_characters()}}
+\item \href{#method-Duplicates-minimize_vocabulary}{\code{Duplicates$minimize_vocabulary()}}
 \item \href{#method-Duplicates-detect}{\code{Duplicates$detect()}}
 \item \href{#method-Duplicates-get_duplicates_groups}{\code{Duplicates$get_duplicates_groups()}}
 \item \href{#method-Duplicates-make_annotation_data}{\code{Duplicates$make_annotation_data()}}
@@ -170,6 +172,45 @@ speed up character count}
 
 \item{\code{threshold}}{numeric (0 < x < 1), the minimum similarity to qualify two
 documents as duplicates}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Duplicates-count_characters"></a>}}
+\if{latex}{\out{\hypertarget{method-Duplicates-count_characters}{}}}
+\subsection{Method \code{count_characters()}}{
+Count characters, required step for \verb{$detect()}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Duplicates$count_characters(verbose = TRUE, sample = 1000)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{verbose}}{logical, whether to be verbose}
+
+\item{\code{sample}}{number of documents to define a subset of \code{partition_bundle} to
+speed up character count}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Duplicates-minimize_vocabulary"></a>}}
+\if{latex}{\out{\hypertarget{method-Duplicates-minimize_vocabulary}{}}}
+\subsection{Method \code{minimize_vocabulary()}}{
+Reduce vocabulary
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Duplicates$minimize_vocabulary(character_selection = 1:12, verbose = TRUE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{character_selection}}{Which characters to pick.}
+
+\item{\code{verbose}}{A \code{logical} value.}
 }
 \if{html}{\out{</div>}}
 }

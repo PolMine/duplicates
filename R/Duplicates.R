@@ -168,8 +168,61 @@ Duplicates <- R6::R6Class(
       
     },
     
-    
+    #' @description
+    #' Count characters, required step for `$detect()`.
+    #' @importFrom rlang expr
+    count_characters = function(verbose = TRUE, sample = 1000){
+      if (verbose) cli_progress_step("counting characters")
+      
+      if (is.numeric(self$sample)){
+        corpus_obj <- corpus(self$corpus)
+        docs <- sample(s_attributes(corpus_obj, self$s_attribute), self$sample)
+        x <- subset(corpus_obj, expr(!!str2lang(self$s_attribute) %in% !!docs))
+      } else {
+        x <- corpus(self$corpus)
+      }
+      
+      self$char_count <- nchars(
+        x = x,
+        p_attribute = self$p_attribute,
+        char_regex = self$char_regex,
+        lowercase = TRUE,
+        decreasing = FALSE
+      )
+      
+      if (verbose){
+        cli_progress_done()
+        cli::cli_alert_info(
+          sprintf(
+            "letters used for shingling: %s",
+            col_blue(
+              paste(names(self$char_count[character_selection]), collapse = "")
+            )
+          )
+        )
+      }
 
+      invisible(self$char_count)
+    },
+    
+    #' @description
+    #' Reduce vocabulary
+    #' @param character_selection Which characters to pick.
+    #' @param verbose A `logical` value.
+    minimize_vocabulary = function(character_selection = 1:12, verbose = TRUE){
+      if (verbose) cli_progress_step("generate reduced vocabulary")
+      char <- names(self$char_count[character_selection])
+      vocab <- p_attributes(self$corpus, p_attribute = self$p_attribute)
+      vocab <- lapply(
+        strsplit(vocab, ""),
+        function(x) paste(na.omit(ifelse(x %in% char, x, NA)), collapse = "")
+      )
+      self$vocabulary <- unlist(vocab, recursive = FALSE)
+      if (verbose) cli_progress_done()
+      
+      invisible(self$vocabulary)
+    },
+    
 
     #' @description
     #' Wrapper that implements the entire workflow for duplicate detection.
@@ -186,7 +239,7 @@ Duplicates <- R6::R6Class(
     #'   shingles that enter calculation of document similarity. Defaults to
     #'   `n`.
     #' @return The updated content of slot `$duplicates` is returned invisibly.
-    #' @importFrom cli cli_alert_info col_blue
+    #' @importFrom cli cli_alert_info col_blue cli_alert_danger
     #' @importFrom slam row_sums col_sums
     #' @importFrom proxyC simil
     #' @importFrom polmineR as.sparseMatrix
@@ -200,37 +253,10 @@ Duplicates <- R6::R6Class(
       
       sizes <- sapply(x@objects, slot, "size")
 
-      if (is.null(self$char_count)){
-        if (verbose) cli_progress_step("counting characters")
-        self$char_count <- nchars(
-          x = if (is.numeric(self$sample)) sample(x, size = self$sample) else (x),
-          p_attribute = self$p_attribute,
-          regexCharsToKeep = self$char_regex,
-          lowercase = TRUE,
-          decreasing = FALSE,
-          mc = FALSE, progress = progress
-        )
-      }
-      
-      cli::cli_alert_info(
-        sprintf(
-          "letters used for shingling: %s",
-          col_blue(
-            paste(names(self$char_count[character_selection]), collapse = "")
-          )
-        )
-      )
+      if (is.null(self$char_count)) self$count_characters(verbose = verbose)
 
-      if (is.null(self$vocabulary)){
-        if (verbose) cli_progress_step("generate reduced vocabulary")
-        char <- names(self$char_count[character_selection])
-        vocab <- p_attributes(self$corpus, p_attribute = self$p_attribute)
-        vocab <- lapply(
-          strsplit(vocab, ""),
-          function(x) paste(na.omit(ifelse(x %in% char, x, NA)), collapse = "")
-        )
-        self$vocabulary <- unlist(vocab, recursive = FALSE)
-      }
+      if (is.null(self$vocabulary))
+        self$minimize_vocabulary(character_selection = character_selection, verbose = verbose)
 
       if (verbose) cli_progress_step("get data for ngram matrix")
       ngram_bundle <- ngrams(
@@ -254,7 +280,8 @@ Duplicates <- R6::R6Class(
         as.sparseMatrix()
       
       if (verbose) cli_progress_step("get dates")
-      dates <- s_attributes(x, s_attribute = self$s_attribute)
+      dates <- s_attributes(x, s_attribute = self$s_attribute, unique = TRUE)
+      dates <- lapply(dates, `[[`, 1L)
       
       if (verbose) cli_progress_step("split data into groups")
       f <- if (!is.null(f)) f else as.factor(unname(unlist(dates)))
@@ -330,9 +357,7 @@ Duplicates <- R6::R6Class(
         simlist <- pblapply(names(groups), .get_similarities, cl = mc)
       } else {
         if (mc){
-          if (verbose) cli_progress_step("compute similarities")
           simlist <- mclapply(names(groups), .get_similarities, mc.cores = mc)
-          if (verbose) cli_progress_done()
         } else {
           simlist <- lapply(names(groups), .get_similarities)
         }

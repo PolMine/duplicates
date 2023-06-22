@@ -18,11 +18,14 @@ Imports:
     stringi,
     methods,
     slam,
-    Matrix
+    Matrix,
+    rlang
 Suggests:
     testthat,
-    lubridate
-Description: Miscellaneaous extensions for the polmineR base package.
+    lubridate,
+    knitr
+Description: Near duplicate detection.
+VignetteBuilder: knitr
 Encoding: UTF-8
 License: GPL-3
 Collate:
