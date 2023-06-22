@@ -15,92 +15,85 @@ editor_options:
 library(polmineR)
 library(duplicates)
 library(lubridate) # for fast_strptime
+library(cli)
+library(rlang)
 ```
 
+
+## Prune vocabulary
+
 ```{r eval = "RP" %in% corpus()$corpus}
-corpus_id <- "RP"
+sample_docs <- corpus("RP") %>% 
+  s_attributes("article_date") %>%
+  sample(10)
+  
+charcount <- corpus("RP") %>% 
+  subset(article_date %in% sample_docs) %>% 
+  nchars(
+    p_attribute = "word",
+    char_regex = "[a-zA-ZäöüÄÖÜ]",
+    lowercase = TRUE,
+    decreasing = FALSE
+   )
 
-D <- Duplicates$new(
-  corpus = corpus_id,
-  char_regex = "[a-zA-ZäöüÄÖÜ]",
-  p_attribute = "word",
-  s_attribute = "article_date",
-  date_preprocessor = NULL,
-  sample = 5L,
-  n = 0L,
-  threshold = 0.6 # default is 0.9
+vocab <- minimize_vocabulary(
+  x = "RP",
+  chars = names(charcount[1:12]),
+  p_attribute = "word"
 )
+```
 
-sample_docs <- corpus(corpus_id) %>% 
-  s_attributes("article_id") %>% 
-  sample(25)
-        
-corpus_min <- corpus(corpus_id) %>% 
-  subset(article_id %in% sample_docs)
 
-D$char_count <- nchars(
-  x = corpus_min,
-  p_attribute = "word",
-  char_regex = "[a-zA-ZäöüÄÖÜ]",
-  lowercase = TRUE,
-  decreasing = FALSE
-)
+## Generate chunks
 
-D$minimize_vocabulary()
+```{r}
+date_min <- corpus("RP") %>% 
+  s_attributes("article_date") %>%
+  as.Date %>%
+  na.omit() %>%
+  min()
 
-date_min <- corpus(corpus_id) %>% s_attributes("article_date") %>% as.Date %>% na.omit() %>% min()
-date_max <- corpus(corpus_id) %>% s_attributes("article_date") %>% as.Date %>% na.omit() %>% max()
+date_max <- corpus("RP") %>%
+  s_attributes("article_date") %>%
+  as.Date %>%
+  na.omit() %>%
+  max()
 
 begin <- seq.Date(from = date_min, to = date_max, by = 1L) %>% 
   lubridate::floor_date(unit = "month") %>% 
   unique()
 
 end <- lubridate::floor_date(begin + 32, unit = "month") + 7L
-
-started <- Sys.time()
-for (i in seq_along(begin)){
-  message("processing chunk starting with: ", begin[i])
-  article_bundle <- corpus(corpus_id) %>% 
-    subset(
-      as.Date(fast_strptime(article_date, "%Y-%m-%d")) >= begin[i] &
-      as.Date(fast_strptime(article_date, "%Y-%m-%d")) <= end[i]
-    ) %>% 
-    split(s_attribute = "article_id")
-  
-  D$detect(
-    x = article_bundle,
-    mc = 6L,
-    progress = FALSE,
-    f = rep(1L, times = length(article_bundle))
-  )
-}
-Sys.time() - started
-
-
-# To inspect result
-head(D$duplicates)
 ```
 
+
+## Run duplicate detection
 
 ```{r}
-if (interactive()){
-  for (i in 1L:nrow(D$duplicates)){
-    
-    print(i)
-    
-    corpus("NADIRASZ") %>%
-      subset(article_id == !!D$duplicates[i][["name"]]) %>%
-      read() %>%
-      show()
-    
-    readline()
-    
-    corpus("NADIRASZ") %>%
-      subset(article_id == !!D$duplicates[i][["duplicate_name"]]) %>%
-      read() %>%
-      show()
-    
-    readline()
+started <- Sys.time()
+li <- lapply(
+  seq_along(begin),
+  function(i){
+    message("processing corpus subset starting with: ", begin[i])
+    cli_progress_step("make corpus subset")
+    x <- corpus("RP") %>% 
+      subset(
+        as.Date(fast_strptime(article_date, "%Y-%m-%d")) >= !!begin[i] &
+          as.Date(fast_strptime(article_date, "%Y-%m-%d")) <= !!end[i]
+      ) %>% 
+      split(s_attribute = "article_id", verbose = FALSE)
+    cli_progress_done()
+
+    detect_duplicates(
+      x = x,
+      p_attribute = "word",
+      s_attribute = "article_date",
+      mc = parallel::detectCores() - 2L,
+      vocab = vocab
+    )
   }
-}
+)
+duration <- Sys.time() - started
 ```
+
+
