@@ -72,7 +72,7 @@ end <- lubridate::floor_date(begin + 32, unit = "month") + 7L
 ```{r}
 started <- Sys.time()
 li <- lapply(
-  seq_along(begin),
+  seq_along(begin)[1:2],
   function(i){
     message("processing corpus subset starting with: ", begin[i])
     cli_progress_step("make corpus subset")

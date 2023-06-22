@@ -35,44 +35,50 @@ duplicates_get_groups <- function(x){
     )
   )
   
-  sizes <- unique(rbindlist(
+  metadata <- unique(rbindlist(
     list(
-      self$duplicates[, c("name", "size")],
-      self$duplicates[, c("duplicate_name", "duplicate_size")]
+      x[, c("name", "size", "date")],
+      x[, c("duplicate_name", "duplicate_size", "date_duplicate")]
     ),
     use.names = FALSE
   ))
   
-  sizes[dt, on = "name"]
+  y <- metadata[dt, on = "name"]
+  setcolorder(y, neworder = c("group", "name", "date", "size"))
+  y
 }
 
-
-#' @description
+#' Encode annotation data
+#' 
 #' Add structural attributes to CWB corpus based on the annotation data that
-#' has been generated (data.table in field annotation).
+#' has been generated.
+#' @param x Data.
+#' @param corpus ID of CWB corpus.
 #' @param method XXX.
 #' @importFrom data.table setDT
 #' @importFrom cwbtools s_attribute_encode
-duplicates_encode <- function(x, method = "R"){
+duplicates_encode <- function(x, corpus, method = "R"){
   
-  x <- corpus(self$corpus)
+  corpus_obj <- corpus(corpus)
   
   for (s_attr in c("is_duplicate", "duplicates")){
     s_attribute_encode(
-      values = as.character(self$annotation[[s_attr]]),
-      data_dir = x@data_dir,
+      values = as.character(x[[s_attr]]),
+      data_dir = corpus_obj@data_dir,
       s_attribute = s_attr,
-      corpus = self$corpus,
-      region_matrix = as.matrix(self$annotation[, c("cpos_left", "cpos_right")]),
+      corpus = corpus,
+      region_matrix = as.matrix(x[, c("cpos_left", "cpos_right")]),
       method = method,
-      registry_dir = x@registry_dir,
-      encoding = x@encoding,
+      registry_dir = corpus_obj@registry_dir,
+      encoding = corpus_obj@encoding,
       delete = TRUE,
       verbose = TRUE
     )
   }
   invisible(TRUE)
 }
+
+.N <- NULL # to avoid warnings
 
 #' Make annotation data
 #' 
@@ -84,6 +90,9 @@ duplicates_encode <- function(x, method = "R"){
 #'   excluded from the analysis otherwise.
 #' @param cols XXX.
 #' @param order XXX.
+#' @param x Input `data.table`.
+#' @param corpus ID of CWB corpus.
+#' @param s_attribute Structural attribute to annotate.
 #' @importFrom data.table setDT setnames setkeyv
 #' @importFrom polmineR corpus
 duplicates_as_annotation_data = function(x, corpus, s_attribute, drop = NULL, cols = c("size", "name"), order = c(1L, 1L)){
@@ -92,16 +101,17 @@ duplicates_as_annotation_data = function(x, corpus, s_attribute, drop = NULL, co
   
   if (!is.null(drop)){
     groups <- groups[!groups[["name"]] %in% drop]
-    groups[groups[, .N, by = "group"], "group_size" := N, on = "group"]
-    groups <- groups[group_size > 1L][, "group_size" := NULL]
+    groups_n <- groups[, .N, by = "group"]
+    groups[groups_n, "group_size" := groups_n[["N"]], on = "group"]
+    groups <- groups[groups[["group_size"]] > 1L][, "group_size" := NULL]
   }
   
   original <- groups[,
                      setorderv(x = .SD, cols = cols, order = order)[1,],
                      by = "group", .SDcols = cols
   ][, "is_duplicate" := FALSE]
-  groups[original, "is_duplicate" := is_duplicate, on = "name"]
-  groups[, "is_duplicate" := ifelse(is.na(is_duplicate), TRUE, is_duplicate)]
+  groups[original, "is_duplicate" := groups[["is_duplicate"]], on = "name"]
+  groups[, "is_duplicate" := ifelse(is.na(groups[["is_duplicate"]]), TRUE, groups[["is_duplicate"]])]
   duplicates_dt <- groups[,
                           list(
                             name = .SD[["name"]],
@@ -116,14 +126,15 @@ duplicates_as_annotation_data = function(x, corpus, s_attribute, drop = NULL, co
   
   # get regions ------------------------------------------------------------
   
-  x <- corpus(self$corpus)
+  corpus_obj <- corpus(corpus)
+  x <- corpus(corpus)
   regions <- setDT(
     RcppCWB::s_attribute_decode(
-      corpus = self$corpus,
-      data_dir = x@data_dir,
+      corpus = corpus,
+      data_dir = corpus_obj@data_dir,
       s_attribute = s_attribute,
-      encoding = x@encoding,
-      registry = x@registry_dir,
+      encoding = corpus_obj@encoding,
+      registry = corpus_obj@registry_dir,
       method = "Rcpp"
     )
   )
@@ -133,24 +144,24 @@ duplicates_as_annotation_data = function(x, corpus, s_attribute, drop = NULL, co
   # finalize annotation data -----------------------------------------------
   
   setnames(duplicates_dt, old = "name", new = s_attribute)
-  self$annotation <- duplicates_dt[regions, on = s_attribute]
-  self$annotation[,
+  anno <- duplicates_dt[regions, on = s_attribute]
+  anno[,
                   "is_duplicate" := ifelse(
-                    is.na(self$annotation[["is_duplicate"]]),
+                    is.na(anno[["is_duplicate"]]),
                     FALSE,
-                    self$annotation[["is_duplicate"]]
+                    anno[["is_duplicate"]]
                   )
   ]
-  self$annotation[,
+  anno[,
                   "duplicates" := ifelse(
-                    is.na(self$annotation[["duplicates"]]),
+                    is.na(anno[["duplicates"]]),
                     "",
-                    self$annotation[["duplicates"]]
+                    anno[["duplicates"]]
                   )]
   setcolorder(
-    self$annotation,
+    anno,
     c("cpos_left", "cpos_right", s_attribute, "is_duplicate", "duplicates")
   )
-  setorderv(self$annotation, cols = "cpos_left")
-  invisible(self$annotation)
+  setorderv(anno, cols = "cpos_left")
+  anno
 }

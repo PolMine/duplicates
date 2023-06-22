@@ -18,19 +18,18 @@ Imports:
     stringi,
     methods,
     slam,
-    Matrix,
-    rlang
+    Matrix
 Suggests:
     testthat,
     lubridate,
-    knitr
+    knitr,
+    rlang
 Description: Near duplicate detection.
 VignetteBuilder: knitr
 Encoding: UTF-8
 License: GPL-3
 Collate:
     'duplicates_package.R'
-    'Duplicates.R'
     'nchars.R'
     'detect_duplicates.R'
     'utils.R'
