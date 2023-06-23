@@ -96,48 +96,44 @@ setMethod("nchars", "subcorpus_bundle", function(x, decreasing = TRUE, mc = FALS
 
 
 #' @param verbose Whether to output progress messages.
-#' @param sample An `integer` or `numeric` value defining the number of sample
-#'   tokens extracted from the (entirely decoded) token stream to be evaluated.
 #' @rdname nchars
 #' @importFrom polmineR decode
 #' @importFrom stringi stri_count_fixed stri_opts_fixed
+#' @importFrom RcppCWB cl_id2freq cl_lexicon_size
 #' @examples
 #' library(polmineR)
 #' use("RcppCWB")
-#' n <- corpus("REUTERS") %>% nchars(sample = 4000)
-setMethod("nchars", "corpus", function(x, p_attribute = "word", lowercase = TRUE, sample = 5000000L, char_regex = "[a-zA-Z]", decreasing = TRUE, verbose = TRUE){
-  # optime get_token_stream(), use it here and callNextMethod() for 
-  # partition- and subcorpus-method
-  cli::cli_progress_step(msg = "decode token stream")
-  tokens <- decode(
-    0L:(x@size - 1L),
-    corpus = x,
-    boost = TRUE,
-    p_attributes = p_attribute
+#' n <- corpus("REUTERS") %>% nchars(decreasing = FALSE)
+setMethod("nchars", "corpus", function(x, p_attribute = "word", lowercase = TRUE, char_regex = "[a-zA-Z]", decreasing = TRUE, verbose = FALSE){
+  
+  if (verbose) cli_progress_step("get frequencies")
+  lexsize <- cl_lexicon_size(
+    corpus = x@corpus,
+    p_attribute = p_attribute,
+    registry = x@registry_dir
   )
   
-  if (isTRUE(lowercase)){
-    cli::cli_progress_step(msg = "lowercase token stream")
-    tokens <- tolower(tokens)
-  }
+  freqs <- cl_id2freq(
+    corpus = x@corpus,
+    p_attribute = p_attribute,
+    id = 0L:(lexsize - 1L),
+    registry = x@registry_dir
+  )
+
+  if (verbose) cli_progress_step("get and process lexicon")
+  lex <- p_attributes(.Object = x, p_attribute = p_attribute)
+  if (lowercase) lex <- tolower(lex)
+  lexsplit <- strsplit(lex, split = "")
   
-  if (is.numeric(sample)){
-    cli::cli_progress_step(msg = "draw sample")
-    tokens <- sample(tokens, size = sample)
-    gc()
-  }
+  if (verbose) cli_progress_step("count characters")
+  dt <- data.table(
+    char = unlist(lexsplit, recursive = FALSE),
+    n = unlist(mapply(rep.int, x = freqs, times = nchar(lex)), recursive = TRUE)
+  )
+  cnt <- dt[, .N, by = "char"]
+  vec <- setNames(cnt[["N"]], cnt[["char"]])
   
-  cli::cli_progress_step(msg = "split into characters")
-  chars <- unlist(strsplit(tokens, "", fixed = TRUE), recursive = FALSE)
-  
-  cli::cli_progress_step(msg = "tabulate")
-  n <- table(chars)
-  
-  cli::cli_progress_step(msg = "apply regular expression")
-  if(!is.null(char_regex)) n <- n[grep(char_regex, names(n))]
-  
-  cli::cli_progress_step(msg = "order result")
-  y <- n[order(n, decreasing = decreasing)]
-  
-  setNames(as.integer(y), names(y))
+  vec <- vec[grepl(char_regex, names(vec))]
+  vec <- if (decreasing) vec[order(vec, decreasing = TRUE)] else vec[order(vec)]
+  vec  
 })

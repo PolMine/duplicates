@@ -35,10 +35,9 @@ nchars(x, ...)
   x,
   p_attribute = "word",
   lowercase = TRUE,
-  sample = 5000000L,
   char_regex = "[a-zA-Z]",
   decreasing = TRUE,
-  verbose = TRUE
+  verbose = FALSE
 )
 }
 \arguments{
@@ -57,9 +56,6 @@ nchars(x, ...)
 \item{mc}{logical}
 
 \item{progress}{A \code{logical} value.}
-
-\item{sample}{An \code{integer} or \code{numeric} value defining the number of sample
-tokens extracted from the (entirely decoded) token stream to be evaluated.}
 
 \item{verbose}{Whether to output progress messages.}
 }
@@ -86,5 +82,5 @@ corpus("REUTERS") \%>\%
   nchars()
 library(polmineR)
 use("RcppCWB")
-n <- corpus("REUTERS") \%>\% nchars(sample = 4000)
+n <- corpus("REUTERS") \%>\% nchars(decreasing = FALSE)
 }

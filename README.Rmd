@@ -1,0 +1,27 @@
+---
+title: Introducing the duplicates package
+output: github_document
+editor_options: 
+  chunk_output_type: console
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r chunk_options, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "README-"
+)
+```
+
+
+## About 
+
+The package implements a procedure described by Fritz Kliche, Andre Blessing,
+Urlich Heid and Jonathan Sonntag in the paper "The eIdentity Text
+ExplorationWorkbench" presented at LREC 2014
+(see \url{http://www.lrec-conf.org/proceedings/lrec2014/pdf/332_Paper.pdf}).
+The main function is `detect_duplicates()`.
+
+
