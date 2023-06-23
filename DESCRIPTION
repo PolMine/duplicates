@@ -1,7 +1,7 @@
 Package: duplicates
 Type: Package
 Title: Near duplicate detection
-Version: 0.0.3
+Version: 0.0.4
 Date: 2023-06-22
 Author: Andreas Blaette
 Maintainer: Andreas Blaette <andreas.blaette@uni-due.de>

@@ -135,9 +135,14 @@ setMethod("detect_duplicates", "partition_bundle",
       similarity = sim_min@x
     )
     dt[, "size" := sizes[dt[["name"]]]]
-    dt[, "date" := unlist(dates[dt[["name"]]])]
     dt[, "duplicate_size" := sizes[dt[["duplicate_name"]]]]
-    dt[, "date_duplicate" := unlist(dates[dt[["duplicate_name"]]])]
+    
+    if (nrow(dt) > 0L){
+      dt[, "date" := unlist(dates[dt[["name"]]])]
+      dt[, "date_duplicate" := unlist(dates[dt[["duplicate_name"]]])]
+    } else {
+      dt[, "date" := character()][, "date_duplicate" := character()]
+    }
     dt
   }
 )
