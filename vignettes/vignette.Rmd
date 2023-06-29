@@ -14,86 +14,53 @@ editor_options:
 ```{r}
 library(polmineR)
 library(duplicates)
-library(lubridate) # for fast_strptime
-library(cli)
-library(rlang)
 ```
 
 
 ## Prune vocabulary
 
-```{r eval = "RP" %in% corpus()$corpus}
-sample_docs <- corpus("RP") %>% 
-  s_attributes("article_date") %>%
-  sample(10)
-  
-charcount <- corpus("RP") %>% 
-  subset(article_date %in% sample_docs) %>% 
+```{r}
+use(pkg = "duplicates")
+
+charcount <- corpus("REUTERS2") %>%
   nchars(
     p_attribute = "word",
-    char_regex = "[a-zA-ZäöüÄÖÜ]",
+    char_regex = "[a-zA-Z]",
     lowercase = TRUE,
     decreasing = FALSE
    )
 
 vocab <- minimize_vocabulary(
-  x = "RP",
+  x = "REUTERS2",
   chars = names(charcount[1:12]),
   p_attribute = "word"
 )
-```
 
+x <- corpus("REUTERS2") |>
+  split(s_attribute = "doc_id")
 
-## Generate chunks
-
-```{r}
-date_min <- corpus("RP") %>% 
-  s_attributes("article_date") %>%
-  as.Date %>%
-  na.omit() %>%
-  min()
-
-date_max <- corpus("RP") %>%
-  s_attributes("article_date") %>%
-  as.Date %>%
-  na.omit() %>%
-  max()
-
-begin <- seq.Date(from = date_min, to = date_max, by = 1L) %>% 
-  lubridate::floor_date(unit = "month") %>% 
-  unique()
-
-end <- lubridate::floor_date(begin + 32, unit = "month") + 7L
+dupl <- detect_duplicates(
+    x = x,
+    p_attribute = "word",
+    s_attribute = "doc_id",
+    mc = parallel::detectCores() - 2L,
+    vocab = vocab
+  )
 ```
 
 
 ## Run duplicate detection
 
+
 ```{r}
-started <- Sys.time()
-li <- lapply(
-  seq_along(begin)[1:2],
-  function(i){
-    message("processing corpus subset starting with: ", begin[i])
-    cli_progress_step("make corpus subset")
-    x <- corpus("RP") %>% 
-      subset(
-        as.Date(fast_strptime(article_date, "%Y-%m-%d")) >= !!begin[i] &
-          as.Date(fast_strptime(article_date, "%Y-%m-%d")) <= !!end[i]
-      ) %>% 
-      split(s_attribute = "article_id", verbose = FALSE)
-    cli_progress_done()
+x <- corpus("REUTERS2") |>
+  split(s_attribute = "doc_id")
 
-    detect_duplicates(
-      x = x,
-      p_attribute = "word",
-      s_attribute = "article_date",
-      mc = parallel::detectCores() - 2L,
-      vocab = vocab
-    )
-  }
-)
-duration <- Sys.time() - started
+dupl <- detect_duplicates(
+    x = x,
+    p_attribute = "word",
+    s_attribute = "doc_id",
+    mc = parallel::detectCores() - 2L,
+    vocab = vocab
+  )
 ```
-
-

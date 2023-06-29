@@ -72,37 +72,29 @@ appeared later will be considered the duplicate.
 }
 \examples{
 library(polmineR)
+use(pkg = "duplicates")
 
-sample_docs <- corpus("RP") \%>\% 
-  s_attributes("article_date") \%>\%
-  sample(10)
-  
-charcount <- corpus("RP") \%>\% 
-  subset(article_date \%in\% sample_docs) \%>\% 
+charcount <- corpus("REUTERS2") \%>\% 
   nchars(
     p_attribute = "word",
-    char_regex = "[a-zA-ZäöüÄÖÜ]",
+    char_regex = "[a-zA-Z]",
     lowercase = TRUE,
     decreasing = FALSE
    )
 
 vocab <- minimize_vocabulary(
-  x = "RP",
+  x = "REUTERS2",
   chars = names(charcount[1:12]),
   p_attribute = "word"
 )
 
-dates <- seq.Date(as.Date("2014-01-02"), as.Date("2014-02-08"), by = 1L) \%>\% 
-  as.character()
-
-x <- corpus("RP") |>
-  subset(article_date \%in\% dates) |> 
-  split(s_attribute = "article_id")
+x <- corpus("REUTERS2") |>
+  split(s_attribute = "doc_id")
 
 dupl <- detect_duplicates(
     x = x,
     p_attribute = "word",
-    s_attribute = "article_date",
+    s_attribute = "doc_id",
     mc = parallel::detectCores() - 2L,
     vocab = vocab
   )

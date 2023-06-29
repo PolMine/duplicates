@@ -31,8 +31,11 @@ docnodes <- lapply(
     )
 )
 
-docnodes[[length(docnodes) + 1L]] <- gsub("oil", "pepsi", docnodes[[1]])
-docnodes[[length(docnodes) + 1L]] <- gsub("oil", "coca\ncola", docnodes[[2]])
+docnodes[[length(docnodes) + 1L]] <- gsub("oil", "pepsi", docnodes[[1]]) %>% 
+  gsub('<doc id="127">', '<doc id="127b">', .)
+
+docnodes[[length(docnodes) + 1L]] <- gsub("oil", "coca\ncola", docnodes[[2]])  %>% 
+  gsub('<doc id="144">', '<doc id="144b">', .)
   
 reuters_xml <- sprintf("<xml>\n%s\n</xml>", paste(docnodes, collapse = "\n"))
 
