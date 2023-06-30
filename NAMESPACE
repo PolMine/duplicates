@@ -2,6 +2,7 @@
 
 export(detect_duplicates)
 export(minimize_vocabulary)
+exportMethods(detect_duplicates)
 exportMethods(nchars)
 import(data.table)
 importFrom(Matrix,triu)

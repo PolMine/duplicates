@@ -28,8 +28,6 @@ setGeneric("detect_duplicates", function(x, ...) standardGeneric("detect_duplica
 #' @return The updated content of slot `$duplicates` is returned invisibly.
 #' @param s_attribute The s-attribute providing the date of documents.
 #' @param p_attribute The p-attribute to evaluate.
-#' @param date_preprocessor A function used to preprocess dates as extracted
-#'   from `s_attribute`.
 #' @param threshold A `numeric` value (0 < x < 1), the minimum similarity to 
 #'   qualify two documents as duplicates
 #' @param mc A `logical` value, whether to use multicore.
@@ -86,7 +84,6 @@ setMethod("detect_duplicates", "partition_bundle",
     x, n = 5L, min_shingle_length = n,
     p_attribute = "word", s_attribute = "text_date",
     vocab,
-    date_preprocessor = NULL, 
     threshold = 0.9,
     verbose = TRUE, mc = FALSE
   ){ 
@@ -105,27 +102,15 @@ setMethod("detect_duplicates", "partition_bundle",
     m <- as.TermDocumentMatrix(ngrams, col = "count", verbose = FALSE) |>
       weigh(method = "tfidf") |>
       as.sparseMatrix()
-    # Very short documents may result in shingle lengths below n, and this
-    # may result in an undesired complete similarity. So drop short 
-    # shingles and purge matrix.
-    short_shingles <- which(nchar(rownames(m)) < min_shingle_length)
-    if (length(short_shingles) > 0L){
-      m <- m[-short_shingles,]
-      empty_docs <- which(col_sums(m) == 0)
-      if (length(empty_docs) > 0L) m <- m[,-empty_docs]
-    }
     
-    if (verbose) cli_progress_step("compute similarity ({.val {ncol(m)}} docs)")
-    sim <- simil(m, margin = 2, method = "cosine", min_simil = threshold, use_nan = FALSE)
-    sim_min <- triu(sim, k = 1L)
-    if (verbose) cli_progress_done()
-    if (verbose) cli_alert_info("no of duplicates: {.val {length(sim_min@x)}}")
-    
-    dt <- data.table(
-      name = sim_min@Dimnames[[1]][sim_min@i + 1],
-      duplicate_name = sim_min@Dimnames[[2]][sim_min@j + 1],
-      similarity = sim_min@x
+    dt <- detect_duplicates(
+      x = m,
+      n = n,
+      min_shingle_length = min_shingle_length,
+      threshold = threshold,
+      verbose = verbose
     )
+    
     dt[, "size" := sizes[dt[["name"]]]]
     dt[, "duplicate_size" := sizes[dt[["duplicate_name"]]]]
     
@@ -138,3 +123,86 @@ setMethod("detect_duplicates", "partition_bundle",
     dt
   }
 )
+
+#' @param char A `character` vector with characters to keep. Passed into method
+#'   `polmineR::ngrams()`.
+#' @examples
+#' library(polmineR)
+#' use(pkg = "duplicates")
+#' 
+#' x <- corpus("REUTERS2") %>% 
+#'   split(s_attribute = "doc_id") %>% 
+#'   get_token_stream(p_attribute = "word", collapse = "")
+#'   
+#' chars <- table(tolower(strsplit(paste(unlist(x), collapse = ""), "")[[1]]))
+#' chars <- chars[grep("[a-zA-Z]", names(chars))]
+#' char <- names(chars[order(chars, decreasing = FALSE)][1:20])
+#' 
+#' detect_duplicates(x = x, n = 5L, char = char, threshold = 0.6)
+#' @rdname detect_duplicates
+setMethod("detect_duplicates", "list", function(x, n = 5L, min_shingle_length = n, char = "", threshold = 0.9, verbose = TRUE, mc = FALSE){ 
+  started <- Sys.time()
+  
+  stopifnot(is.character(char))
+  
+  if (verbose) cli_progress_step("make ngram matrix")
+  ngrams <- ngrams(
+    x, n = n, char = char,  mc = mc, progress = FALSE, verbose = FALSE
+  )
+  
+  DT <- data.table::rbindlist(ngrams)
+  DT[, "j" := unlist(mapply(rep, seq_along(ngrams), lapply(ngrams, function(obj) nrow(obj))))]
+  unique_keys <- unique(DT[["ngram"]])
+  keys <- setNames(seq_along(unique_keys), unique_keys)
+  i <- keys[ DT[["ngram"]] ]
+  tdm <- list(
+    i = unname(i),
+    j = DT[["j"]],
+    v = DT[["count"]],
+    nrow = length(names(keys)),
+    ncol = length(ngrams),
+    dimnames = list(
+      Terms = names(keys),
+      Docs = names(ngrams)
+    )
+  )
+  class(tdm) <- c("TermDocumentMatrix", "simple_triplet_matrix")
+  
+  m <- weigh(tdm, method = "tfidf") |> as.sparseMatrix()
+  
+  detect_duplicates(
+    x = m,
+    n = n,
+    min_shingle_length = min_shingle_length,
+    threshold = threshold,
+    verbose = verbose
+  )
+}
+)
+
+#' @rdname detect_duplicates
+#' @export
+setMethod("detect_duplicates", "dgCMatrix", function(x, n, min_shingle_length, threshold, verbose){
+  
+  # Very short documents may result in shingle lengths below n, and this
+  # may result in an undesired complete similarity. So drop short 
+  # shingles and purge matrix.
+  short_shingles <- which(nchar(rownames(x)) < min_shingle_length)
+  if (length(short_shingles) > 0L){
+    x <- x[-short_shingles,]
+    empty_docs <- which(col_sums(x) == 0)
+    if (length(empty_docs) > 0L) x <- x[,-empty_docs]
+  }
+  
+  if (verbose) cli_progress_step("compute similarity ({.val {ncol(x)}} docs)")
+  sim <- simil(x, margin = 2, method = "cosine", min_simil = threshold, use_nan = FALSE)
+  sim_min <- triu(sim, k = 1L)
+  if (verbose) cli_progress_done()
+  if (verbose) cli_alert_info("no of duplicates: {.val {length(sim_min@x)}}")
+  
+  data.table(
+    name = sim_min@Dimnames[[1]][sim_min@i + 1],
+    duplicate_name = sim_min@Dimnames[[2]][sim_min@j + 1],
+    similarity = sim_min@x
+  )
+})

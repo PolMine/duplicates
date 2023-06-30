@@ -3,6 +3,8 @@
 \name{detect_duplicates}
 \alias{detect_duplicates}
 \alias{detect_duplicates,partition_bundle-method}
+\alias{detect_duplicates,list-method}
+\alias{detect_duplicates,dgCMatrix-method}
 \title{Detect Duplicates}
 \usage{
 detect_duplicates(x, ...)
@@ -14,11 +16,22 @@ detect_duplicates(x, ...)
   p_attribute = "word",
   s_attribute = "text_date",
   vocab,
-  date_preprocessor = NULL,
   threshold = 0.9,
   verbose = TRUE,
   mc = FALSE
 )
+
+\S4method{detect_duplicates}{list}(
+  x,
+  n = 5L,
+  min_shingle_length = n,
+  char = "",
+  threshold = 0.9,
+  verbose = TRUE,
+  mc = FALSE
+)
+
+\S4method{detect_duplicates}{dgCMatrix}(x, n, min_shingle_length, threshold, verbose)
 }
 \arguments{
 \item{x}{A \code{partition_bundle} or \code{subcorpus_bundle} object with documents to
@@ -40,15 +53,15 @@ shingles that enter calculation of document similarity. Defaults to
 
 \item{vocab}{Pruned vocabulary.}
 
-\item{date_preprocessor}{A function used to preprocess dates as extracted
-from \code{s_attribute}.}
-
 \item{threshold}{A \code{numeric} value (0 < x < 1), the minimum similarity to
 qualify two documents as duplicates}
 
 \item{verbose}{A \code{logical} value, whether to be verbose.}
 
 \item{mc}{A \code{logical} value, whether to use multicore.}
+
+\item{char}{A \code{character} vector with characters to keep. Passed into method
+\code{polmineR::ngrams()}.}
 }
 \value{
 The updated content of slot \verb{$duplicates} is returned invisibly.
@@ -98,4 +111,16 @@ dupl <- detect_duplicates(
     mc = parallel::detectCores() - 2L,
     vocab = vocab
   )
+library(polmineR)
+use(pkg = "duplicates")
+
+x <- corpus("REUTERS2") \%>\% 
+  split(s_attribute = "doc_id") \%>\% 
+  get_token_stream(p_attribute = "word", collapse = "")
+  
+chars <- table(tolower(strsplit(paste(unlist(x), collapse = ""), "")[[1]]))
+chars <- chars[grep("[a-zA-Z]", names(chars))]
+char <- names(chars[order(chars, decreasing = FALSE)][1:20])
+
+detect_duplicates(x = x, n = 5L, char = char, threshold = 0.6)
 }
