@@ -1,3 +1,7 @@
+## v0.1.2
+
+- Bug removed of `nchars()`-method for `corpus` objects. Unit test added.
+
 ## v0.0.5
 
 - Significant performance improvement for `nchars()`-method for corpus objects.

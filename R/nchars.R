@@ -130,8 +130,8 @@ setMethod("nchars", "corpus", function(x, p_attribute = "word", lowercase = TRUE
     char = unlist(lexsplit, recursive = FALSE),
     n = unlist(mapply(rep.int, x = freqs, times = nchar(lex)), recursive = TRUE)
   )
-  cnt <- dt[, .N, by = "char"]
-  vec <- setNames(cnt[["N"]], cnt[["char"]])
+  cnt <- dt[, sum(.SD[["n"]]), by = "char"]
+  vec <- setNames(cnt[["V1"]], cnt[["char"]])
   
   vec <- vec[grepl(char_regex, names(vec))]
   vec <- if (decreasing) vec[order(vec, decreasing = TRUE)] else vec[order(vec)]
