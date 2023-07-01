@@ -30,7 +30,7 @@ jobs:
 
       - uses: r-lib/actions/check-r-package@v2
       
-            - name: Test coverage
+      - name: Test coverage
         run: |
           covr::codecov(
             quiet = FALSE,
