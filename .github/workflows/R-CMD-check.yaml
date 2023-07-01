@@ -21,15 +21,14 @@ jobs:
         with:
           use-public-rspm: true
 
-      - uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          extra-packages: any::rcmdcheck
-          needs: check
-
       - name: Install dev version of polmineR
         run: |
           install.packages(pkgs = "polmineR", contriburl = "https://polmine.github.io/drat/src/contrib", type = "source")
         shell: Rscript {0}
 
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::rcmdcheck
+          needs: check
 
       - uses: r-lib/actions/check-r-package@v2
