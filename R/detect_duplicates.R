@@ -63,11 +63,9 @@ setGeneric("detect_duplicates", function(x, ...) standardGeneric("detect_duplica
 #'     decreasing = FALSE
 #'    )
 #' 
-#' vocab <- minimize_vocabulary(
-#'   x = "REUTERS2",
-#'   chars = names(charcount[1:12]),
-#'   p_attribute = "word"
-#' )
+#' vocab <- corpus("REUTERS2") %>% 
+#'   p_attributes(p_attribute = "word") %>% 
+#'   charfilter(chars = names(charcount[1:12]))
 #' 
 #' x <- corpus("REUTERS2") |>
 #'   split(s_attribute = "doc_id")

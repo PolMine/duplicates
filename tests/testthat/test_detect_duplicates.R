@@ -17,11 +17,9 @@ test_that(
     
     # --------------------------------------------------------------------------
 
-    vocab <- minimize_vocabulary(
-      x = "REUTERS2",
-      chars = names(charcount[1:20]),
-      p_attribute = "word"
-    )
+    vocab <- corpus("REUTERS2") %>% 
+      p_attributes(p_attribute = "word") %>% 
+      charfilter(chars = names(charcount[1:20]))
 
     x <- corpus("REUTERS2") |>
       polmineR::split(s_attribute = "doc_id")
@@ -49,6 +47,9 @@ test_that(
       char = names(charcount[1:20]),
       threshold = 0.7
     )
+    
+    data.table::setorderv(dupl2, cols = "similarity", order = -1L)
+    data.table::setorderv(dupl, cols = "similarity", order = -1L)
     
     expect_equal(
       dupl[, c("name", "duplicate_name", "similarity")],

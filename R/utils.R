@@ -1,16 +1,20 @@
-#' Reduce vocabulary to a set of characters
+#' Reduce characters in vector to a given set of characters
 #' 
-#' @param x A CWB corpus.
+#' @param x A `character` vector.
 #' @param chars Vector with characters to keep.
-#' @param p_attribute A positional attribute.
 #' @export
 #' @importFrom polmineR p_attributes
-#' @importFrom stats na.omit
-minimize_vocabulary <- function(x, chars, p_attribute = "word"){
-  vocab <- p_attributes(x, p_attribute = p_attribute)
+#' @examples
+#' library(polmineR)
+#' use("duplicates") # make REUTERS2 available
+#' 
+#' vocab <- corpus("REUTERS2") |>
+#'   p_attributes(p_attribute = "word") |> 
+#'   charfilter(chars = tolower(LETTERS[1:10]))
+charfilter <- function(x, chars){
   vocab <- lapply(
-    strsplit(vocab, ""),
-    function(x) paste(na.omit(ifelse(x %in% chars, x, NA)), collapse = "")
+    strsplit(x, ""),
+    function(str) paste(ifelse(str %in% chars, str, ""), collapse = "")
   )
   unlist(vocab, recursive = FALSE)
 }

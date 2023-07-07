@@ -1,3 +1,7 @@
+## v0.1.3
+
+- Function `minimize_vocabulary()` more generic and renamed as `charfilter()`.
+
 ## v0.1.2
 
 - Bug removed of `nchars()`-method for `corpus` objects. Unit test added.
