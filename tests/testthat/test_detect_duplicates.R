@@ -8,7 +8,7 @@ test_that(
   "run duplicate detection",
   {
     charcount <- corpus("REUTERS2") %>%
-      nchars(
+      charcount(
         p_attribute = "word",
         char_regex = "[a-zA-Z]",
         lowercase = TRUE,
@@ -55,5 +55,13 @@ test_that(
       dupl[, c("name", "duplicate_name", "similarity")],
       dupl2
     )
+    
+    # --------------------------------------------------------------------------
+    
+    docgroups1 <- as_docgroups(dupl)
+    docgroups2 <- as_docgroups(dupl2)
+    
+    expect_identical(docgroups1[["group"]], docgroups2[["group"]])
+    expect_identical(docgroups1[["name"]], docgroups2[["name"]])
   }
 )

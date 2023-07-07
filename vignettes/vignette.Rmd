@@ -23,7 +23,7 @@ library(duplicates)
 use(pkg = "duplicates")
 
 charcount <- corpus("REUTERS2") %>%
-  nchars(
+  charcount(
     p_attribute = "word",
     char_regex = "[a-zA-Z]",
     lowercase = TRUE,

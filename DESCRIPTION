@@ -31,8 +31,9 @@ Encoding: UTF-8
 License: GPL-3
 Collate:
     'duplicates_package.R'
-    'nchars.R'
+    'charcount.R'
     'detect_duplicates.R'
     'utils.R'
+    'encode.R'
 RoxygenNote: 7.2.3
 Roxygen: list(markdown = TRUE)

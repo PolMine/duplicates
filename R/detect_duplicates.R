@@ -56,7 +56,7 @@ setGeneric("detect_duplicates", function(x, ...) standardGeneric("detect_duplica
 #' use(pkg = "duplicates")
 #' 
 #' charcount <- corpus("REUTERS2") %>% 
-#'   nchars(
+#'   charcount(
 #'     p_attribute = "word",
 #'     char_regex = "[a-zA-Z]",
 #'     lowercase = TRUE,
@@ -77,6 +77,8 @@ setGeneric("detect_duplicates", function(x, ...) standardGeneric("detect_duplica
 #'     mc = parallel::detectCores() - 2L,
 #'     vocab = vocab
 #'   )
+#'   
+#' docgrps <- as_docgroups(dupl)
 setMethod("detect_duplicates", "partition_bundle",
   function(
     x, n = 5L, min_shingle_length = n,
@@ -87,10 +89,10 @@ setMethod("detect_duplicates", "partition_bundle",
   ){ 
     started <- Sys.time()
     
-    if (verbose) cli_progress_step("get sizes and dates")
+    if (verbose) cli_progress_step("get sizes and metadata")
     sizes <- sapply(x@objects, slot, "size")
-    dates <- s_attributes(x, s_attribute = s_attribute, unique = TRUE)
-    dates <- lapply(dates, `[[`, 1L) # a sanity measure
+    s_attr <- s_attributes(x, s_attribute = s_attribute, unique = TRUE)
+    s_attr <- lapply(s_attr, `[[`, 1L) # a sanity measure
     
     if (verbose) cli_progress_step("make ngram matrix")
     ngrams <- ngrams(
@@ -113,10 +115,11 @@ setMethod("detect_duplicates", "partition_bundle",
     dt[, "duplicate_size" := sizes[dt[["duplicate_name"]]]]
     
     if (nrow(dt) > 0L){
-      dt[, "date" := unlist(dates[dt[["name"]]])]
-      dt[, "date_duplicate" := unlist(dates[dt[["duplicate_name"]]])]
+      dt[, (s_attribute) := unlist(s_attr[dt[["name"]]])]
+      dt[, (paste("duplicate", s_attribute, sep = "_")) := unlist(s_attr[dt[["duplicate_name"]]])]
     } else {
-      dt[, "date" := character()][, "date_duplicate" := character()]
+      dt[, (s_attribute) := character()]
+      dt[, (paste("duplicate", s_attribute, sep = "_")) := character()]
     }
     dt
   }
@@ -136,7 +139,9 @@ setMethod("detect_duplicates", "partition_bundle",
 #' chars <- chars[grep("[a-zA-Z]", names(chars))]
 #' char <- names(chars[order(chars, decreasing = FALSE)][1:20])
 #' 
-#' detect_duplicates(x = x, n = 5L, char = char, threshold = 0.6)
+#' dupl <- detect_duplicates(x = x, n = 5L, char = char, threshold = 0.6)
+#' 
+#' docgrps <- as_docgroups(dupl)
 #' @rdname detect_duplicates
 setMethod("detect_duplicates", "list", function(x, n = 5L, min_shingle_length = n, char = "", threshold = 0.9, verbose = TRUE, mc = FALSE){ 
   started <- Sys.time()
@@ -204,3 +209,40 @@ setMethod("detect_duplicates", "dgCMatrix", function(x, n, min_shingle_length, t
     similarity = sim_min@x
   )
 })
+
+
+#' Get groups of near-duplicate documents
+#' 
+#' @param x A `data.table` with duplicates that have been detected.
+#' @importFrom igraph graph_from_data_frame decompose get.vertex.attribute
+#' @export as_docgroups
+#' @rdname docgroups
+as_docgroups <- function(x){
+  
+  ids <- x[, c("name", "duplicate_name")] |>
+    as.data.frame() |>
+    igraph::graph_from_data_frame() |>
+    igraph::decompose() |>
+    lapply(igraph::get.vertex.attribute, name = "name")
+  
+  dt <- data.table(
+    name = unlist(ids),
+    group = unlist(
+      mapply(rep, seq_along(ids), sapply(ids, length), SIMPLIFY = FALSE),
+      recursive = FALSE
+    )
+  )
+  
+  duplcols <- grep("duplicate_", colnames(x), value = TRUE)
+  metadata <- unique(rbindlist(
+    list(
+      x[, setdiff(colnames(x), c(duplcols, "similarity")), with = FALSE],
+      x[, duplcols, with = FALSE]
+    ),
+    use.names = FALSE
+  ))
+  
+  y <- metadata[dt, on = "name"]
+  setcolorder(y, neworder = c("group", "name"))
+  y
+}

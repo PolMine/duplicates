@@ -88,7 +88,7 @@ library(polmineR)
 use(pkg = "duplicates")
 
 charcount <- corpus("REUTERS2") \%>\% 
-  nchars(
+  charcount(
     p_attribute = "word",
     char_regex = "[a-zA-Z]",
     lowercase = TRUE,
@@ -109,6 +109,8 @@ dupl <- detect_duplicates(
     mc = parallel::detectCores() - 2L,
     vocab = vocab
   )
+  
+docgrps <- as_docgroups(dupl)
 library(polmineR)
 use(pkg = "duplicates")
 
@@ -120,5 +122,7 @@ chars <- table(tolower(strsplit(paste(unlist(x), collapse = ""), "")[[1]]))
 chars <- chars[grep("[a-zA-Z]", names(chars))]
 char <- names(chars[order(chars, decreasing = FALSE)][1:20])
 
-detect_duplicates(x = x, n = 5L, char = char, threshold = 0.6)
+dupl <- detect_duplicates(x = x, n = 5L, char = char, threshold = 0.6)
+
+docgrps <- as_docgroups(dupl)
 }

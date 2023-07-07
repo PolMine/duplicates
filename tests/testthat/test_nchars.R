@@ -5,10 +5,10 @@ use("duplicates")
 testthat::context("detect_duplicates")
 
 test_that(
-  "crosscheck nchars",
+  "crosscheck charcount",
   {
     charcount1 <- corpus("REUTERS2") %>%
-      nchars(
+      charcount(
         p_attribute = "word",
         char_regex = "[a-zA-Z]",
         lowercase = TRUE,
