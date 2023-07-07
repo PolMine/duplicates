@@ -9,9 +9,9 @@
 #' @param decreasing logical, passed into order call 
 #' @importFrom methods as
 #' @importFrom polmineR get_token_stream
-#' @exportMethod nchars
-#' @rdname nchars
-setGeneric("nchars", function(x, ...) standardGeneric("nchars"))
+#' @exportMethod charcount
+#' @rdname charcount
+setGeneric("charcount", function(x, ...) standardGeneric("charcount"))
 
 
 #' @param p_attribute the p-attribute
@@ -19,27 +19,27 @@ setGeneric("nchars", function(x, ...) standardGeneric("nchars"))
 #' @param lowercase whether to lower tokens
 #' @param mc logical
 #' @param decreasing logical, passed into order call 
-#' @exportMethod nchars
-#' @rdname nchars
+#' @exportMethod charcount
+#' @rdname charcount
 #' @examples
 #' library(polmineR)
 #' use("RcppCWB")
 #' 
 #' partition("REUTERS", id = "127") %>%
-#'   nchars()
+#'   charcount()
 #'   
 #' corpus("REUTERS") %>%
 #'   subset(id == "127") %>%
-#'   nchars()
+#'   charcount()
 #'   
 #' corpus("REUTERS") %>%
 #'   partition_bundle(s_attribute = "id") %>%
-#'   nchars()
+#'   charcount()
 #'   
 #' corpus("REUTERS") %>%
 #'   split(s_attribute = "id") %>%
-#'   nchars()
-setMethod("nchars", "partition", function(x, p_attribute = "word", char_regex = "[a-zA-Z]", lowercase = TRUE, decreasing = TRUE){
+#'   charcount()
+setMethod("charcount", "partition", function(x, p_attribute = "word", char_regex = "[a-zA-Z]", lowercase = TRUE, decreasing = TRUE){
   .Object <- x
   charSoup <- get_token_stream(.Object, p_attribute = p_attribute, collapse = "")
   if (isTRUE(lowercase)) charSoup <- tolower(charSoup)
@@ -51,9 +51,9 @@ setMethod("nchars", "partition", function(x, p_attribute = "word", char_regex = 
   setNames(as.integer(y), names(y))
 })
 
-#' @rdname nchars
-setMethod("nchars", "subcorpus", function(x, p_attribute = "word", char_regex = "[a-zA-Z]", lowercase = TRUE, decreasing = TRUE){
-  nchars(
+#' @rdname charcount
+setMethod("charcount", "subcorpus", function(x, p_attribute = "word", char_regex = "[a-zA-Z]", lowercase = TRUE, decreasing = TRUE){
+  charcount(
     x = as(x, "partition"),
     p_attribute = p_attribute,
     char_regex = char_regex,
@@ -62,15 +62,15 @@ setMethod("nchars", "subcorpus", function(x, p_attribute = "word", char_regex = 
   )
 })
 
-#' @rdname nchars
-setMethod("nchars", "partition_bundle", function(x, mc = FALSE, progress = TRUE, decreasing = TRUE, ...){
+#' @rdname charcount
+setMethod("charcount", "partition_bundle", function(x, mc = FALSE, progress = TRUE, decreasing = TRUE, ...){
   partitionCount <- if (isFALSE(mc)){
-    lapply(x@objects, function(obj) nchars(x = obj, ...))
+    lapply(x@objects, function(obj) charcount(x = obj, ...))
   } else {
     if (progress){
-      pblapply(x@objects, function(obj) nchars(x = obj, ...), cl = mc)
+      pblapply(x@objects, function(obj) charcount(x = obj, ...), cl = mc)
     } else {
-      mclapply(x@objects, function(obj) nchars(x = obj, ...), mc.cores = mc)
+      mclapply(x@objects, function(obj) charcount(x = obj, ...), mc.cores = mc)
     }
   }
   
@@ -84,9 +84,9 @@ setMethod("nchars", "partition_bundle", function(x, mc = FALSE, progress = TRUE,
   setNames(as.integer(y), names(y))
 })
 
-#' @rdname nchars
-setMethod("nchars", "subcorpus_bundle", function(x, decreasing = TRUE, mc = FALSE, progress = TRUE, ...){
-  nchars(
+#' @rdname charcount
+setMethod("charcount", "subcorpus_bundle", function(x, decreasing = TRUE, mc = FALSE, progress = TRUE, ...){
+  charcount(
     x = as(x, "partition_bundle"),
     decreasing = decreasing,
     mc = mc,
@@ -96,15 +96,15 @@ setMethod("nchars", "subcorpus_bundle", function(x, decreasing = TRUE, mc = FALS
 
 
 #' @param verbose Whether to output progress messages.
-#' @rdname nchars
+#' @rdname charcount
 #' @importFrom polmineR decode
 #' @importFrom stringi stri_count_fixed stri_opts_fixed
 #' @importFrom RcppCWB cl_id2freq cl_lexicon_size
 #' @examples
 #' library(polmineR)
 #' use("RcppCWB")
-#' n <- corpus("REUTERS") %>% nchars(decreasing = FALSE)
-setMethod("nchars", "corpus", function(x, p_attribute = "word", lowercase = TRUE, char_regex = "[a-zA-Z]", decreasing = TRUE, verbose = FALSE){
+#' n <- corpus("REUTERS") %>% charcount(decreasing = FALSE)
+setMethod("charcount", "corpus", function(x, p_attribute = "word", lowercase = TRUE, char_regex = "[a-zA-Z]", decreasing = TRUE, verbose = FALSE){
   
   if (verbose) cli_progress_step("get frequencies")
   lexsize <- cl_lexicon_size(
