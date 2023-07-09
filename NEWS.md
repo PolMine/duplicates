@@ -6,6 +6,8 @@
 - Argument `s_attribute` of method `detect_duplicates()` used generically. A new
 column with the name of the the s-attribute to be used as metadata will be
 added.
+- Dropped method `duplicates_encode()` - it is better to use
+`cwbtools::s_attribute_encode()` without wrapper.
 
 ## v0.1.2
 

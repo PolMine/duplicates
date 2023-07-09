@@ -15,13 +15,13 @@ Imports:
     RcppCWB,
     cli,
     igraph,
-    cwbtools,
     stringi,
     methods,
     slam,
     Matrix
 Suggests:
     testthat,
+    cwbtools,
     lubridate,
     knitr,
     rlang

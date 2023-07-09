@@ -102,34 +102,3 @@ duplicates_as_annotation_data = function(x, corpus, s_attribute){
   anno
 }
 
-
-#' Encode annotation data
-#' 
-#' Add structural attributes to CWB corpus based on the annotation data that
-#' has been generated.
-#' @param x Data.
-#' @param corpus ID of CWB corpus.
-#' @param method XXX.
-#' @importFrom data.table setDT
-#' @importFrom cwbtools s_attribute_encode
-#' @export
-duplicates_encode <- function(x, corpus, method = "R", ...){
-  
-  corpus_obj <- corpus(corpus, ...)
-  
-  for (s_attr in c("is_duplicate", "duplicates")){
-    s_attribute_encode(
-      values = as.character(x[[s_attr]]),
-      data_dir = corpus_obj@data_dir,
-      s_attribute = s_attr,
-      corpus = corpus,
-      region_matrix = as.matrix(x[, c("cpos_left", "cpos_right")]),
-      method = method,
-      registry_dir = corpus_obj@registry_dir,
-      encoding = corpus_obj@encoding,
-      delete = TRUE,
-      verbose = TRUE
-    )
-  }
-  invisible(TRUE)
-}
