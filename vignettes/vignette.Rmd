@@ -80,7 +80,7 @@ annodata <- duplicates_as_annotation_data(
 ```{r encode}
 library(cwbtools)
 
-regdata <- cwbtools::registry_file_parse(corpus = "REUTERS2", registry = registry())
+regdata <- registry_file_parse(corpus = "REUTERS2", registry = registry())
 
 for (s_attr in c("is_duplicate", "duplicates")){
   s_attribute_encode(
@@ -97,8 +97,8 @@ for (s_attr in c("is_duplicate", "duplicates")){
   )
 }
 
-RcppCWB::cl_load_corpus("REUTERS2", registry = polmineR::registry())
+# RcppCWB::cl_load_corpus("REUTERS2", registry = polmineR::registry())
 
-corpus("REUTERS2", registry_dir = registry()) %>% 
-  s_attributes()
+# corpus("REUTERS2", registry_dir = registry()) %>% 
+#  s_attributes()
 ```

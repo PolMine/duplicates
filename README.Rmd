@@ -31,6 +31,10 @@ ExplorationWorkbench" presented at LREC 2014
 The main function is `detect_duplicates()`.
 
 
+## Installation
+
+## Using the 'duplicates' package
+
 ## Related work
 
 Near duplicate detection is a standard NLP task. There is a wide range of
@@ -44,3 +48,7 @@ Workbench (CWB). The hashing step which is a selling point for the textreuse
 package is performed already, and requirements for tokenizing and hashing the
 data are not replicated. The scenario for using the duplicates package is 
 large, CWB-indexed corpora.
+
+
+## Citation
+
