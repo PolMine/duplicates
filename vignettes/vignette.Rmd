@@ -11,7 +11,7 @@ editor_options:
   chunk_output_type: console
 ---
 
-```{r}
+```{r load_libraries}
 library(polmineR)
 library(duplicates)
 ```
@@ -19,7 +19,7 @@ library(duplicates)
 
 ## Prune vocabulary
 
-```{r}
+```{r prune_vocab}
 use(pkg = "duplicates")
 
 charcount <- corpus("REUTERS2") %>%
@@ -50,7 +50,7 @@ dupl <- docsimil(
 ## Run duplicate detection
 
 
-```{r}
+```{r duplicate_detection}
 x <- corpus("REUTERS2") |>
   split(s_attribute = "doc_id")
 
@@ -66,7 +66,7 @@ dupl <- docsimil(
 
 ## Write to corpus
 
-```{r}
+```{r get_annotation_data}
 groups <- docgroups(dupl)
 
 annodata <- duplicates_as_annotation_data(
@@ -77,7 +77,7 @@ annodata <- duplicates_as_annotation_data(
 ```
 
 
-```{r}
+```{r encode}
 library(cwbtools)
 
 regdata <- cwbtools::registry_file_parse(corpus = "REUTERS2", registry = registry())

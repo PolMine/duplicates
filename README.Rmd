@@ -31,3 +31,16 @@ ExplorationWorkbench" presented at LREC 2014
 The main function is `detect_duplicates()`.
 
 
+## Related work
+
+Near duplicate detection is a standard NLP task. There is a wide range of
+algorithms that are used for near duplicate detection and there is a broad set
+of implementations in the programming languages used for NLP tasks.
+
+In the R context, the [textreuse](https://CRAN.R-project.org/package=textreuse)
+package is the point of reference for duplicate detection. The use case for the
+*duplicates* package is large corpora that have been indexed with the Corpus
+Workbench (CWB). The hashing step which is a selling point for the textreuse
+package is performed already, and requirements for tokenizing and hashing the
+data are not replicated. The scenario for using the duplicates package is 
+large, CWB-indexed corpora.
