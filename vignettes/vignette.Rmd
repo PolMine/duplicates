@@ -14,6 +14,7 @@ editor_options:
 ```{r load_libraries}
 library(polmineR)
 library(duplicates)
+library(cwbtools)
 ```
 
 
@@ -78,24 +79,22 @@ annodata <- duplicates_as_annotation_data(
 
 
 ```{r encode, eval = FALSE}
-library(cwbtools)
-
 regdata <- registry_file_parse(corpus = "REUTERS2", registry = registry())
 
-for (s_attr in c("is_duplicate", "duplicates")){
-  s_attribute_encode(
-    values = as.character(annodata[[s_attr]]),
-    data_dir = regdata$home,
-    s_attribute = s_attr,
-    corpus = "REUTERS2",
-    region_matrix = as.matrix(annodata[, c("cpos_left", "cpos_right")]),
-    method = "R",
-    registry_dir = regdata$registry,
-    encoding = regdata$properties["charset"],
-    delete = TRUE,
-    verbose = TRUE
-  )
-}
+# for (s_attr in c("is_duplicate", "duplicates")){
+#   s_attribute_encode(
+#     values = as.character(annodata[[s_attr]]),
+#     data_dir = regdata$home,
+#     s_attribute = s_attr,
+#     corpus = "REUTERS2",
+#     region_matrix = as.matrix(annodata[, c("cpos_left", "cpos_right")]),
+#     method = "R",
+#     registry_dir = regdata$registry,
+#     encoding = regdata$properties["charset"],
+#     delete = TRUE,
+#     verbose = TRUE
+#   )
+# }
 
 # RcppCWB::cl_load_corpus("REUTERS2", registry = polmineR::registry())
 
