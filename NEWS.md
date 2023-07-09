@@ -1,3 +1,8 @@
+## v0.1.4
+
+- Method `detect_duplicates()` renamed to `docsimil()`.
+- Function `as_docgroups()` renamed to `docgroups()`.
+
 ## v0.1.3
 
 - Function `minimize_vocabulary()` more generic and renamed as `charfilter()`.

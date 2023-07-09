@@ -1,5 +1,5 @@
-#' @rdname detect_duplicates
-setGeneric("detect_duplicates", function(x, ...) standardGeneric("detect_duplicates"))
+#' @rdname docsimil
+setGeneric("docsimil", function(x, ...) standardGeneric("docsimil"))
 
 
 #' Detect Duplicates
@@ -34,8 +34,8 @@ setGeneric("detect_duplicates", function(x, ...) standardGeneric("detect_duplica
 #' @param verbose A `logical` value, whether to be verbose.
 #' @param ... Further arguments (unused).
 #' @param vocab Pruned vocabulary.
-#' @export detect_duplicates
-#' @rdname detect_duplicates
+#' @export docsimil
+#' @rdname docsimil
 #' @importFrom parallel mclapply
 #' @importFrom pbapply pblapply
 #' @importFrom stats setNames
@@ -70,7 +70,7 @@ setGeneric("detect_duplicates", function(x, ...) standardGeneric("detect_duplica
 #' x <- corpus("REUTERS2") |>
 #'   split(s_attribute = "doc_id")
 #' 
-#' dupl <- detect_duplicates(
+#' dupl <- docsimil(
 #'     x = x,
 #'     p_attribute = "word",
 #'     s_attribute = "doc_id",
@@ -78,8 +78,8 @@ setGeneric("detect_duplicates", function(x, ...) standardGeneric("detect_duplica
 #'     vocab = vocab
 #'   )
 #'   
-#' docgrps <- as_docgroups(dupl)
-setMethod("detect_duplicates", "partition_bundle",
+#' docgrps <- docgroups(dupl)
+setMethod("docsimil", "partition_bundle",
   function(
     x, n = 5L, min_shingle_length = n,
     p_attribute = "word", s_attribute = "text_date",
@@ -103,7 +103,7 @@ setMethod("detect_duplicates", "partition_bundle",
       weigh(method = "tfidf") |>
       as.sparseMatrix()
     
-    dt <- detect_duplicates(
+    dt <- docsimil(
       x = m,
       n = n,
       min_shingle_length = min_shingle_length,
@@ -139,11 +139,11 @@ setMethod("detect_duplicates", "partition_bundle",
 #' chars <- chars[grep("[a-zA-Z]", names(chars))]
 #' char <- names(chars[order(chars, decreasing = FALSE)][1:20])
 #' 
-#' dupl <- detect_duplicates(x = x, n = 5L, char = char, threshold = 0.6)
+#' dupl <- docsimil(x = x, n = 5L, char = char, threshold = 0.6)
 #' 
-#' docgrps <- as_docgroups(dupl, cols = "name", order = 1L)
-#' @rdname detect_duplicates
-setMethod("detect_duplicates", "list", function(x, n = 5L, min_shingle_length = n, char = "", threshold = 0.9, verbose = TRUE, mc = FALSE){ 
+#' docgrps <- docgroups(dupl, cols = "name", order = 1L)
+#' @rdname docsimil
+setMethod("docsimil", "list", function(x, n = 5L, min_shingle_length = n, char = "", threshold = 0.9, verbose = TRUE, mc = FALSE){ 
   started <- Sys.time()
   
   stopifnot(is.character(char))
@@ -173,7 +173,7 @@ setMethod("detect_duplicates", "list", function(x, n = 5L, min_shingle_length = 
   
   m <- weigh(tdm, method = "tfidf") |> as.sparseMatrix()
   
-  detect_duplicates(
+  docsimil(
     x = m,
     n = n,
     min_shingle_length = min_shingle_length,
@@ -183,9 +183,9 @@ setMethod("detect_duplicates", "list", function(x, n = 5L, min_shingle_length = 
 }
 )
 
-#' @rdname detect_duplicates
+#' @rdname docsimil
 #' @export
-setMethod("detect_duplicates", "dgCMatrix", function(x, n, min_shingle_length, threshold, verbose){
+setMethod("docsimil", "dgCMatrix", function(x, n, min_shingle_length, threshold, verbose){
   
   # Very short documents may result in shingle lengths below n, and this
   # may result in an undesired complete similarity. So drop short 
@@ -220,9 +220,9 @@ setMethod("detect_duplicates", "dgCMatrix", function(x, n, min_shingle_length, t
 #' @param cols XXX.
 #' @param order XXX.
 #' @importFrom igraph graph_from_data_frame decompose get.vertex.attribute
-#' @export as_docgroups
+#' @export docgroups
 #' @rdname docgroups
-as_docgroups <- function(x, drop = NULL, cols = c("size", "name"), order = c(1L, 1L)){
+docgroups <- function(x, drop = NULL, cols = c("size", "name"), order = c(1L, 1L)){
   
   ids <- x[, c("name", "duplicate_name")] |>
     as.data.frame() |>

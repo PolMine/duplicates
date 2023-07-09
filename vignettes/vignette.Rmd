@@ -37,7 +37,7 @@ vocab <- corpus("REUTERS2") %>%
 x <- corpus("REUTERS2") |>
   split(s_attribute = "doc_id")
 
-dupl <- detect_duplicates(
+dupl <- docsimil(
     x = x,
     p_attribute = "word",
     s_attribute = "doc_id",
@@ -54,7 +54,7 @@ dupl <- detect_duplicates(
 x <- corpus("REUTERS2") |>
   split(s_attribute = "doc_id")
 
-dupl <- detect_duplicates(
+dupl <- docsimil(
     x = x,
     p_attribute = "word",
     s_attribute = "doc_id",
@@ -67,7 +67,7 @@ dupl <- detect_duplicates(
 ## Write to corpus
 
 ```{r}
-groups <- as_docgroups(dupl)
+groups <- docgroups(dupl)
 
 annodata <- duplicates_as_annotation_data(
   x = groups,

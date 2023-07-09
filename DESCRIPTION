@@ -1,8 +1,8 @@
 Package: duplicates
 Type: Package
 Title: Near duplicate detection
-Version: 0.1.3
-Date: 2023-07-03
+Version: 0.1.4
+Date: 2023-07-09
 Author: Andreas Blaette
 Maintainer: Andreas Blaette <andreas.blaette@uni-due.de>
 Additional_repositories: https://polmine.github.io/drat
@@ -32,8 +32,8 @@ License: GPL-3
 Collate:
     'duplicates_package.R'
     'charcount.R'
-    'detect_duplicates.R'
+    'docsimil.R'
     'utils.R'
-    'encode.R'
+    'annodata.R'
 RoxygenNote: 7.2.3
 Roxygen: list(markdown = TRUE)

@@ -2,7 +2,7 @@ library(polmineR)
 library(duplicates)
 use("duplicates")
 
-testthat::context("detect_duplicates")
+testthat::context("docsimil")
 
 test_that(
   "crosscheck charcount",

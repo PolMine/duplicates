@@ -30,7 +30,7 @@
 #' x <- corpus("REUTERS2") |>
 #'   split(s_attribute = "doc_id")
 #' 
-#' dupl <- detect_duplicates(
+#' dupl <- docsimil(
 #'     x = x,
 #'     p_attribute = "word",
 #'     s_attribute = "doc_id",
@@ -38,7 +38,7 @@
 #'     vocab = vocab
 #'   )
 #' 
-#' grps <- as_docgroups(dupl)
+#' grps <- docgroups(dupl)
 #' 
 #' annodata <- duplicates_as_annotation_data(
 #'   x = grps,

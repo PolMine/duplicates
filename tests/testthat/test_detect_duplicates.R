@@ -2,7 +2,7 @@ library(polmineR)
 library(duplicates)
 use("duplicates")
 
-testthat::context("detect_duplicates")
+testthat::context("docsimil")
 
 test_that(
   "run duplicate detection",
@@ -24,7 +24,7 @@ test_that(
     x <- corpus("REUTERS2") |>
       polmineR::split(s_attribute = "doc_id")
 
-    dupl <- detect_duplicates(
+    dupl <- docsimil(
         x = x,
         p_attribute = "word",
         s_attribute = "doc_id",
@@ -41,7 +41,7 @@ test_that(
       polmineR::split(s_attribute = "doc_id") %>%
       get_token_stream(p_attribute = "word", collapse = "")
 
-    dupl2 <- detect_duplicates(
+    dupl2 <- docsimil(
       x = x,
       n = 5L,
       char = names(charcount[1:20]),
@@ -58,8 +58,8 @@ test_that(
     
     # --------------------------------------------------------------------------
     
-    docgroups1 <- as_docgroups(dupl)
-    docgroups2 <- as_docgroups(dupl2, cols = "name", order = 1L)
+    docgroups1 <- docgroups(dupl)
+    docgroups2 <- docgroups(dupl2, cols = "name", order = 1L)
     
     expect_identical(docgroups1[["group"]], docgroups2[["group"]])
     expect_identical(docgroups1[["name"]], docgroups2[["name"]])
