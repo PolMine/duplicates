@@ -4,7 +4,7 @@
 \alias{duplicates_encode}
 \title{Encode annotation data}
 \usage{
-duplicates_encode(x, corpus, method = "R")
+duplicates_encode(x, corpus, method = "R", ...)
 }
 \arguments{
 \item{x}{Data.}

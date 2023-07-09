@@ -3,6 +3,8 @@
 export(as_docgroups)
 export(charfilter)
 export(detect_duplicates)
+export(duplicates_as_annotation_data)
+export(duplicates_encode)
 exportMethods(charcount)
 exportMethods(detect_duplicates)
 import(data.table)

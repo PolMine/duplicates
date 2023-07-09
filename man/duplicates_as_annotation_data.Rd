@@ -4,14 +4,7 @@
 \alias{duplicates_as_annotation_data}
 \title{Make annotation data}
 \usage{
-duplicates_as_annotation_data(
-  x,
-  corpus,
-  s_attribute,
-  drop = NULL,
-  cols = c("size", "name"),
-  order = c(1L, 1L)
-)
+duplicates_as_annotation_data(x, corpus, s_attribute)
 }
 \arguments{
 \item{x}{Input \code{data.table}.}
@@ -19,16 +12,43 @@ duplicates_as_annotation_data(
 \item{corpus}{ID of CWB corpus.}
 
 \item{s_attribute}{Structural attribute to annotate.}
-
-\item{drop}{A character vector of document IDs that will be removed from
-the annotation data. Useful for removing known noise that will be
-excluded from the analysis otherwise.}
-
-\item{cols}{XXX.}
-
-\item{order}{XXX.}
 }
 \description{
 Turn \code{data.table} with duplicates into file with corpus positions and
 annotation of duplicates.
+}
+\examples{
+library(polmineR)
+use(pkg = "duplicates")
+
+charcount <- corpus("REUTERS2") \%>\% 
+  charcount(
+    p_attribute = "word",
+    char_regex = "[a-zA-Z]",
+    lowercase = TRUE,
+    decreasing = FALSE
+   )
+
+vocab <- corpus("REUTERS2") \%>\% 
+  p_attributes(p_attribute = "word") \%>\% 
+  charfilter(chars = names(charcount[1:12]))
+
+x <- corpus("REUTERS2") |>
+  split(s_attribute = "doc_id")
+
+dupl <- detect_duplicates(
+    x = x,
+    p_attribute = "word",
+    s_attribute = "doc_id",
+    mc = parallel::detectCores() - 2L,
+    vocab = vocab
+  )
+
+grps <- as_docgroups(dupl)
+
+annodata <- duplicates_as_annotation_data(
+  x = grps,
+  corpus = "REUTERS2", 
+  s_attribute = "doc_id"
+)
 }

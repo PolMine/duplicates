@@ -124,5 +124,5 @@ char <- names(chars[order(chars, decreasing = FALSE)][1:20])
 
 dupl <- detect_duplicates(x = x, n = 5L, char = char, threshold = 0.6)
 
-docgrps <- as_docgroups(dupl)
+docgrps <- as_docgroups(dupl, cols = "name", order = 1L)
 }

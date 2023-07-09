@@ -59,7 +59,7 @@ test_that(
     # --------------------------------------------------------------------------
     
     docgroups1 <- as_docgroups(dupl)
-    docgroups2 <- as_docgroups(dupl2)
+    docgroups2 <- as_docgroups(dupl2, cols = "name", order = 1L)
     
     expect_identical(docgroups1[["group"]], docgroups2[["group"]])
     expect_identical(docgroups1[["name"]], docgroups2[["name"]])

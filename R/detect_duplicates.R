@@ -141,7 +141,7 @@ setMethod("detect_duplicates", "partition_bundle",
 #' 
 #' dupl <- detect_duplicates(x = x, n = 5L, char = char, threshold = 0.6)
 #' 
-#' docgrps <- as_docgroups(dupl)
+#' docgrps <- as_docgroups(dupl, cols = "name", order = 1L)
 #' @rdname detect_duplicates
 setMethod("detect_duplicates", "list", function(x, n = 5L, min_shingle_length = n, char = "", threshold = 0.9, verbose = TRUE, mc = FALSE){ 
   started <- Sys.time()
@@ -214,10 +214,15 @@ setMethod("detect_duplicates", "dgCMatrix", function(x, n, min_shingle_length, t
 #' Get groups of near-duplicate documents
 #' 
 #' @param x A `data.table` with duplicates that have been detected.
+#' @param drop A character vector of document IDs that will be removed from
+#'   the annotation data. Useful for removing known noise that will be 
+#'   excluded from the analysis otherwise.
+#' @param cols XXX.
+#' @param order XXX.
 #' @importFrom igraph graph_from_data_frame decompose get.vertex.attribute
 #' @export as_docgroups
 #' @rdname docgroups
-as_docgroups <- function(x){
+as_docgroups <- function(x, drop = NULL, cols = c("size", "name"), order = c(1L, 1L)){
   
   ids <- x[, c("name", "duplicate_name")] |>
     as.data.frame() |>
@@ -242,7 +247,30 @@ as_docgroups <- function(x){
     use.names = FALSE
   ))
   
-  y <- metadata[dt, on = "name"]
-  setcolorder(y, neworder = c("group", "name"))
-  y
+  grp <- metadata[dt, on = "name"]
+  setcolorder(grp, neworder = c("group", "name"))
+
+  if (!is.null(drop)){
+    grp <- grp[!grp[["name"]] %in% drop]
+    grp_n <- grp[, .N, by = "group"]
+    grp[grp_n, "group_size" := grp_n[["N"]], on = "group"]
+    grp <- grp[grp[["group_size"]] > 1L][, "group_size" := NULL]
+  }
+  
+  original <- grp[
+    , setorderv(x = .SD, cols = cols, order = order)[1,],
+    by = "group",
+    .SDcols = cols
+  ]
+  original[, "is_duplicate" := FALSE]
+  grp[original, "is_duplicate" := original[["is_duplicate"]], on = "name"]
+  grp[
+    , "is_duplicate" := ifelse(
+      is.na(grp[["is_duplicate"]]),
+      TRUE,
+      grp[["is_duplicate"]]
+    )
+  ]
+  
+  grp
 }

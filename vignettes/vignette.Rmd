@@ -62,3 +62,29 @@ dupl <- detect_duplicates(
     vocab = vocab
   )
 ```
+
+
+## Write to corpus
+
+```{r}
+groups <- as_docgroups(dupl)
+
+annodata <- duplicates_as_annotation_data(
+  x = groups,
+  corpus = "REUTERS2",
+  s_attribute = "doc_id"
+)
+
+duplicates_encode(
+  annodata,
+  corpus = "REUTERS2",
+  method = "R",
+  registry_dir = RcppCWB::corpus_registry_dir("REUTERS2")[1]
+)
+
+RcppCWB::cl_delete_corpus("REUTERS2", registry = RcppCWB::corpus_registry_dir("REUTERS2")[1])
+RcppCWB::cl_load_corpus("REUTERS2", registry = polmineR::registry())
+
+corpus("REUTERS2") %>% 
+  s_attributes()
+```

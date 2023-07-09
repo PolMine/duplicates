@@ -4,10 +4,18 @@
 \alias{as_docgroups}
 \title{Get groups of near-duplicate documents}
 \usage{
-as_docgroups(x)
+as_docgroups(x, drop = NULL, cols = c("size", "name"), order = c(1L, 1L))
 }
 \arguments{
 \item{x}{A \code{data.table} with duplicates that have been detected.}
+
+\item{drop}{A character vector of document IDs that will be removed from
+the annotation data. Useful for removing known noise that will be
+excluded from the analysis otherwise.}
+
+\item{cols}{XXX.}
+
+\item{order}{XXX.}
 }
 \description{
 Get groups of near-duplicate documents
