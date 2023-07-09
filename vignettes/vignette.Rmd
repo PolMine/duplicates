@@ -77,7 +77,7 @@ annodata <- duplicates_as_annotation_data(
 ```
 
 
-```{r encode}
+```{r encode, eval = FALSE}
 library(cwbtools)
 
 regdata <- registry_file_parse(corpus = "REUTERS2", registry = registry())
