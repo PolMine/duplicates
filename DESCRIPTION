@@ -24,7 +24,8 @@ Suggests:
     cwbtools,
     lubridate,
     knitr,
-    rlang
+    rlang,
+    fs
 Description: Near duplicate detection.
 VignetteBuilder: knitr
 Encoding: UTF-8
