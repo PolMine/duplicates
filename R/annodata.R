@@ -8,6 +8,7 @@
 #' @param x Input `data.table`.
 #' @param corpus ID of CWB corpus.
 #' @param s_attribute Structural attribute to annotate.
+#' @param ... Further arguments passed into call of `corpus()` method.
 #' @importFrom data.table setDT setnames setkeyv
 #' @importFrom polmineR corpus
 #' @export
@@ -45,7 +46,7 @@
 #'   corpus = "REUTERS2", 
 #'   s_attribute = "doc_id"
 #' )
-duplicates_as_annotation_data = function(x, corpus, s_attribute){
+duplicates_as_annotation_data = function(x, corpus, s_attribute, ...){
   
   duplicates_dt <- x[,
     list(
@@ -63,7 +64,7 @@ duplicates_as_annotation_data = function(x, corpus, s_attribute){
   
   # get regions ------------------------------------------------------------
   
-  corpus_obj <- corpus(corpus)
+  corpus_obj <- corpus(corpus, ...)
   regions <- setDT(
     RcppCWB::s_attribute_decode(
       corpus = corpus,

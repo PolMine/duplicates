@@ -37,7 +37,7 @@ test_that(
     
     # Same operation with list -------------------------------------------------
     
-    x <- corpus("REUTERS2") %>%
+    x <- corpus("REUTERS2", registry = registry()) %>%
       polmineR::split(s_attribute = "doc_id") %>%
       get_token_stream(p_attribute = "word", collapse = "")
 

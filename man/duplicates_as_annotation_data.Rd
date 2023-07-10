@@ -4,7 +4,7 @@
 \alias{duplicates_as_annotation_data}
 \title{Make annotation data}
 \usage{
-duplicates_as_annotation_data(x, corpus, s_attribute)
+duplicates_as_annotation_data(x, corpus, s_attribute, ...)
 }
 \arguments{
 \item{x}{Input \code{data.table}.}
@@ -12,6 +12,8 @@ duplicates_as_annotation_data(x, corpus, s_attribute)
 \item{corpus}{ID of CWB corpus.}
 
 \item{s_attribute}{Structural attribute to annotate.}
+
+\item{...}{Further arguments passed into call of \code{corpus()} method.}
 }
 \description{
 Turn \code{data.table} with duplicates into file with corpus positions and
