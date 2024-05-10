@@ -1,8 +1,8 @@
 Package: duplicates
 Type: Package
 Title: Near duplicate detection
-Version: 0.1.5
-Date: 2023-07-10
+Version: 0.1.6
+Date: 2024-05-10
 Author: Andreas Blaette
 Maintainer: Andreas Blaette <andreas.blaette@uni-due.de>
 Additional_repositories: https://polmine.github.io/drat

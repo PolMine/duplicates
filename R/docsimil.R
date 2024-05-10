@@ -143,6 +143,7 @@ setMethod("docsimil", "partition_bundle",
 #' 
 #' docgrps <- docgroups(dupl, cols = "name", order = 1L)
 #' @rdname docsimil
+#' @importFrom cli cli_alert_warning
 setMethod("docsimil", "list", function(x, n = 5L, min_shingle_length = n, char = "", threshold = 0.9, verbose = TRUE, mc = FALSE){ 
   started <- Sys.time()
   
@@ -153,8 +154,18 @@ setMethod("docsimil", "list", function(x, n = 5L, min_shingle_length = n, char =
     x, n = n, char = char,  mc = mc, progress = FALSE, verbose = FALSE
   )
   
+  ngrams <- lapply(ngrams, function(dt) dt[!grepl("^\\s*$", dt[["ngram"]])])
+  
+  empty_docs <- length(which(sapply(ngrams, nrow) == 0))
+  if (empty_docs > 0 && verbose){
+    cli_alert_warning("dropping {.val {empty_docs}} empty documents")
+  }
+  
   DT <- data.table::rbindlist(ngrams)
-  DT[, "j" := unlist(mapply(rep, seq_along(ngrams), lapply(ngrams, function(obj) nrow(obj))))]
+  DT[, "j" := unlist(
+    mapply(rep, seq_along(ngrams), lapply(ngrams, function(obj) nrow(obj)))
+  )]
+  
   unique_keys <- unique(DT[["ngram"]])
   keys <- setNames(seq_along(unique_keys), unique_keys)
   i <- keys[ DT[["ngram"]] ]

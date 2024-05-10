@@ -1,3 +1,7 @@
+## v0.1.6
+
+- `docsimil()` for `list` objects robust when char filtering results in empty docs.
+
 ## v0.1.4
 
 - Method `detect_duplicates()` renamed to `docsimil()`.
